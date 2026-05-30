@@ -684,12 +684,27 @@
     /* Banner */
     .top-banner { font-size: 0.62rem; padding: 6px 12px; letter-spacing: 0.08em; }
     /* Navbar */
-    .navbar { padding: 8px 16px; gap: 8px; flex-wrap: nowrap; }
-    .nav-logo { font-size: 1.2rem; }
-    .search-wrapper { max-width: 200px !important; }
-    .search-box input { font-size: 0.73rem; padding: 8px 10px; }
-    .search-btn { padding: 8px 12px; }
-    .search-btn svg { width: 13px; height: 13px; }
+    .navbar { padding: 8px 16px; gap: 8px; flex-wrap: nowrap; align-items: center; }
+    .nav-logo { font-size: 1.2rem; flex-shrink: 0; }
+    .search-wrapper { max-width: none !important; flex: 0 0 auto; margin-left: auto; }
+    .search-box { border: none; background: transparent; }
+    .search-box input {
+      width: 0;
+      padding: 0;
+      opacity: 0;
+      pointer-events: none;
+      font-size: 0.82rem;
+      transition: width 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+    }
+    .search-wrapper.open .search-box { border: 2px solid var(--black); background: var(--white); }
+    .search-wrapper.open .search-box input {
+      width: calc(100vw - 140px);
+      padding: 9px 12px;
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .search-btn { padding: 9px 12px; background: var(--black); }
+    .search-btn svg { width: 16px; height: 16px; }
     /* Hero */
     .hero { padding: 24px 16px 16px; flex-direction: column; align-items: flex-start; gap: 10px; flex-wrap: nowrap; }
     .hero-title { font-size: clamp(2.8rem, 19vw, 5rem); width: 100%; }
@@ -730,8 +745,7 @@
   @media (max-width: 380px) {
     .navbar { padding: 8px 12px; }
     .nav-logo { font-size: 1.1rem; }
-    .search-wrapper { max-width: 160px !important; }
-    .search-box input { font-size: 0.68rem; padding: 7px 8px; }
+    .search-wrapper.open .search-box input { width: calc(100vw - 120px); }
     .hero { padding: 20px 12px 14px; }
     .hero-title { font-size: clamp(2.5rem, 20vw, 3.5rem); }
     .hero-subtitle { font-size: 0.65rem; }
@@ -1321,6 +1335,33 @@ document.getElementById('subscribeBtn').addEventListener('click', () => {
     window.open('https://mail.google.com/mail/?view=cm&to=achdouzcompany@gmail.com&su=' + subject + '&body=' + body, '_blank');
     document.getElementById('subscribeSuccess').classList.add('show');
   });
+});
+
+// ── MOBILE SEARCH TOGGLE ──
+const searchWrapper = document.getElementById('searchWrapper');
+const searchBtnEl   = document.getElementById('searchBtn');
+const searchInputEl = document.getElementById('searchInput');
+
+function isMobile() { return window.innerWidth <= 600; }
+
+searchBtnEl.addEventListener('click', (e) => {
+  if (isMobile()) {
+    if (!searchWrapper.classList.contains('open')) {
+      e.stopPropagation();
+      searchWrapper.classList.add('open');
+      setTimeout(() => searchInputEl.focus(), 50);
+      return;
+    }
+    // already open — run search
+    runSearch(searchInputEl.value);
+  }
+});
+
+document.addEventListener('click', (e) => {
+  if (isMobile() && !e.target.closest('.search-wrapper')) {
+    searchWrapper.classList.remove('open');
+    document.getElementById('searchResults').classList.remove('open');
+  }
 });
 
 document.getElementById('emailInput').addEventListener('keydown', e => {
