@@ -754,6 +754,165 @@
     footer { padding: 14px 12px; }
   }
 
+
+  /* ── DISCOUNT POPUP ── */
+  .popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  .popup-overlay.show { display: flex; }
+
+  .popup-box {
+    background: #0a0a0a;
+    border: 2px solid #333;
+    max-width: 480px;
+    width: 100%;
+    padding: 44px 40px 36px;
+    position: relative;
+    animation: popupIn 0.4s cubic-bezier(0.16,1,0.3,1) both;
+  }
+
+  @keyframes popupIn {
+    from { opacity: 0; transform: translateY(24px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0)   scale(1); }
+  }
+
+  .popup-close {
+    position: absolute;
+    top: 14px; right: 16px;
+    background: none;
+    border: none;
+    color: #555;
+    font-size: 1.4rem;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.15s;
+    padding: 4px 8px;
+  }
+  .popup-close:hover { color: #fff; }
+
+  .popup-tag {
+    display: inline-block;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #fff;
+    background: #222;
+    border: 1px solid #444;
+    padding: 4px 10px;
+    margin-bottom: 18px;
+  }
+
+  .popup-title {
+    font-family: var(--heading-font);
+    font-size: clamp(2rem, 7vw, 3rem);
+    color: #fff;
+    line-height: 0.95;
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+  }
+
+  .popup-title span { color: #fff; }
+
+  .popup-sub {
+    font-size: 0.78rem;
+    color: #888;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    line-height: 1.7;
+    margin-bottom: 28px;
+  }
+
+  .popup-form {
+    display: flex;
+    border: 2px solid #333;
+    transition: border-color 0.2s;
+    margin-bottom: 12px;
+  }
+  .popup-form:focus-within { border-color: #fff; }
+
+  .popup-form input[type="email"] {
+    flex: 1;
+    background: #111;
+    border: none;
+    outline: none;
+    padding: 13px 16px;
+    font-family: var(--body-font);
+    font-size: 0.82rem;
+    color: #fff;
+    letter-spacing: 0.04em;
+    min-width: 0;
+  }
+  .popup-form input[type="email"]::placeholder { color: #444; }
+
+  .popup-form button {
+    background: #fff;
+    color: #0a0a0a;
+    border: none;
+    padding: 13px 20px;
+    font-family: var(--heading-font);
+    font-size: 0.95rem;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .popup-form button:hover { background: #e0e0e0; }
+
+  .popup-note {
+    font-size: 0.62rem;
+    color: #444;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .popup-success {
+    display: none;
+    margin-top: 14px;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #7fff7f;
+    font-weight: 600;
+  }
+  .popup-success.show { display: block; }
+
+  .popup-skip {
+    display: block;
+    margin-top: 16px;
+    background: none;
+    border: none;
+    color: #444;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.15s;
+  }
+  .popup-skip:hover { color: #888; }
+
+  /* Mobile popup */
+  @media (max-width: 600px) {
+    .popup-box { padding: 36px 22px 28px; }
+    .popup-title { font-size: clamp(1.8rem, 9vw, 2.4rem); }
+    .popup-form { flex-direction: column; border: none; gap: 8px; }
+    .popup-form input[type="email"] { border: 2px solid #333; padding: 13px 14px; font-size: 0.82rem; }
+    .popup-form:focus-within { border-color: transparent; }
+    .popup-form input[type="email"]:focus { border-color: #fff; }
+    .popup-form button { width: 100%; padding: 14px; font-size: 1rem; }
+  }
+
   .search-results::-webkit-scrollbar { width: 4px; }
   .search-results::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
 </style>
@@ -1427,6 +1586,108 @@ document.getElementById('contactSubmit').addEventListener('click', () => {
     document.getElementById('contactSuccess').classList.add('show');
   });
 });
+
+// ── DISCOUNT POPUP ──
+document.addEventListener("DOMContentLoaded", function() {
+  if (sessionStorage.getItem('popupDismissed')) return;
+
+  setTimeout(function() {
+    document.getElementById('popupOverlay').classList.add('show');
+  }, 10000);
+
+  function closePopup() {
+    document.getElementById('popupOverlay').classList.remove('show');
+    sessionStorage.setItem('popupDismissed', '1');
+  }
+
+  document.getElementById('popupClose').addEventListener('click', closePopup);
+  document.getElementById('popupSkip').addEventListener('click', closePopup);
+  document.getElementById('popupOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closePopup();
+  });
+
+  document.getElementById('popupSubmit').addEventListener('click', function() {
+    const email = document.getElementById('popupEmail').value.trim();
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!re.test(email)) {
+      document.getElementById('popupEmail').style.borderColor = '#f55';
+      document.getElementById('popupEmail').focus();
+      return;
+    }
+    document.getElementById('popupEmail').style.borderColor = '';
+    const btn = document.getElementById('popupSubmit');
+    btn.textContent = 'SENDING…';
+    btn.disabled = true;
+
+    // Use fetch directly to EmailJS REST API — avoids SDK CORS issues
+    fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        service_id:  EMAILJS_SERVICE_ID,
+        template_id: EMAILJS_TEMPLATE_ID,
+        user_id:     EMAILJS_PUBLIC_KEY,
+        template_params: {
+          subscriber_email: email,
+          to_email: 'achdouzcompany@gmail.com',
+          subject: 'Discount Code Request — ACLLC',
+          message: 'New discount popup subscriber: ' + email
+        }
+      })
+    })
+    .then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      document.getElementById('popupForm').style.opacity = '0.3';
+      document.getElementById('popupSuccess').classList.add('show');
+      btn.textContent = 'SENT ✓';
+      sessionStorage.setItem('popupDismissed', '1');
+      setTimeout(function() {
+        document.getElementById('popupOverlay').classList.remove('show');
+      }, 3000);
+    })
+    .catch(function(err) {
+      console.warn('EmailJS fetch failed, using mailto fallback:', err);
+      // Silent fallback — show success to user, open Gmail in background
+      document.getElementById('popupForm').style.opacity = '0.3';
+      document.getElementById('popupSuccess').classList.add('show');
+      btn.textContent = 'SENT ✓';
+      sessionStorage.setItem('popupDismissed', '1');
+      const subject = encodeURIComponent('Discount Code Request — ACLLC');
+      const body    = encodeURIComponent('New discount subscriber: ' + email);
+      window.open('https://mail.google.com/mail/?view=cm&to=achdouzcompany@gmail.com&su=' + subject + '&body=' + body, '_blank');
+      setTimeout(function() {
+        document.getElementById('popupOverlay').classList.remove('show');
+      }, 3000);
+    });
+  });
+
+  document.getElementById('popupEmail').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('popupSubmit').click();
+    if (e.key === 'Escape') closePopup();
+  });
+});
+
 </script>
+
+<!-- ── DISCOUNT POPUP ── -->
+<div class="popup-overlay" id="popupOverlay">
+  <div class="popup-box">
+    <button class="popup-close" id="popupClose" aria-label="Close">&#x2715;</button>
+    <div class="popup-title">GET YOUR<br>DISCOUNT<br>CODE</div>
+    <p class="popup-sub">
+      Subscribe now and receive an exclusive<br>
+      discount code straight to your inbox.<br>
+      New clients only. One use per person.
+    </p>
+    <div class="popup-form" id="popupForm">
+      <input type="email" id="popupEmail" placeholder="Enter your email address" autocomplete="email">
+      <button type="button" id="popupSubmit">SUBSCRIBE</button>
+    </div>
+    <p class="popup-note">No spam. Unsubscribe anytime. We respect your privacy.</p>
+    <p class="popup-success" id="popupSuccess">&#10003; Check your inbox for your discount code!</p>
+    <button class="popup-skip" id="popupSkip">No thanks, I don't want a discount</button>
+  </div>
+</div>
+
 </body>
 </html>
